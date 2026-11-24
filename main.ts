@@ -1,8 +1,4 @@
-// A tiny stack VM for make.fun's ISA (version 1): 32-bit wrapping integers, a 256-value data stack, a 64-entry
-// call stack, 256 words of memory, input/output, ten traps with their own exit codes, and a step and an output
-// limit. Every rule follows generator/subject/ISA.md and its reference VM, vm.mjs: the check order per step
-// (step limit, pc range, unknown opcode, cut-off immediate, stack underflow, stack overflow, then the
-// instruction's own traps), and the exact arithmetic of each opcode.
+// Tiny stack VM, make.fun ISA v1: 32-bit wrapping ints, 256 data stack, 64 call stack, 256 mem words.
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
