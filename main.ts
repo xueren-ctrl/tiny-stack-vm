@@ -91,46 +91,86 @@ function run(p, inp) {
       case 27:
         D[sp - 1] = ~D[sp - 1];
         break;
-      case 16: case 17: case 18: case 19: case 20: case 21: case 22:
-      case 24: case 25: case 26: case 28: case 29: case 30:
-      case 32: case 33: case 34: {
+      // Binary ops: one dispatch, not two. Each stores its result in place
+      // (D[sp - 2] = f(a, b); sp-- is exactly pop two, push one) instead of
+      // routing through a second switch and a shared push.
+      case 16:
+        D[sp - 2] = (D[sp - 2] + D[sp - 1]) | 0;
+        sp--;
+        break;
+      case 17:
+        D[sp - 2] = (D[sp - 2] - D[sp - 1]) | 0;
+        sp--;
+        break;
+      case 18:
+        D[sp - 2] = Math.imul(D[sp - 2], D[sp - 1]);
+        sp--;
+        break;
+      case 19: {
         const b = D[sp - 1];
+        if (b === 0) return [out.subarray(0, ol), 4];
         const a = D[sp - 2];
-        let r;
-        switch (op) {
-          case 16: r = (a + b) | 0; break;
-          case 17: r = (a - b) | 0; break;
-          case 18: r = Math.imul(a, b); break;
-          case 19:
-            if (b === 0) return [out.subarray(0, ol), 4];
-            r = a === -2147483648 && b === -1 ? a : (a / b) | 0;
-            break;
-          case 20:
-            if (b === 0) return [out.subarray(0, ol), 4];
-            r = b === -1 ? 0 : (a % b) | 0;
-            break;
-          case 21:
-            if (b === 0) return [out.subarray(0, ol), 4];
-            r = Math.floor((a >>> 0) / (b >>> 0)) | 0;
-            break;
-          case 22:
-            if (b === 0) return [out.subarray(0, ol), 4];
-            r = ((a >>> 0) % (b >>> 0)) | 0;
-            break;
-          case 24: r = a & b; break;
-          case 25: r = a | b; break;
-          case 26: r = a ^ b; break;
-          case 28: r = a << (b & 31); break;
-          case 29: r = a >> (b & 31); break;
-          case 30: r = (a >>> (b & 31)) | 0; break;
-          case 32: r = a === b ? 1 : 0; break;
-          case 33: r = a < b ? 1 : 0; break;
-          default: r = (a >>> 0) < (b >>> 0) ? 1 : 0; // 34: LTU
-        }
-        sp -= 2;
-        D[sp++] = r;
+        D[sp - 2] = a === -2147483648 && b === -1 ? a : (a / b) | 0;
+        sp--;
         break;
       }
+      case 20: {
+        const b = D[sp - 1];
+        if (b === 0) return [out.subarray(0, ol), 4];
+        D[sp - 2] = b === -1 ? 0 : (D[sp - 2] % b) | 0;
+        sp--;
+        break;
+      }
+      case 21: {
+        const b = D[sp - 1];
+        if (b === 0) return [out.subarray(0, ol), 4];
+        D[sp - 2] = Math.floor((D[sp - 2] >>> 0) / (b >>> 0)) | 0;
+        sp--;
+        break;
+      }
+      case 22: {
+        const b = D[sp - 1];
+        if (b === 0) return [out.subarray(0, ol), 4];
+        D[sp - 2] = ((D[sp - 2] >>> 0) % (b >>> 0)) | 0;
+        sp--;
+        break;
+      }
+      case 24:
+        D[sp - 2] = D[sp - 2] & D[sp - 1];
+        sp--;
+        break;
+      case 25:
+        D[sp - 2] = D[sp - 2] | D[sp - 1];
+        sp--;
+        break;
+      case 26:
+        D[sp - 2] = D[sp - 2] ^ D[sp - 1];
+        sp--;
+        break;
+      case 28:
+        D[sp - 2] = D[sp - 2] << (D[sp - 1] & 31);
+        sp--;
+        break;
+      case 29:
+        D[sp - 2] = D[sp - 2] >> (D[sp - 1] & 31);
+        sp--;
+        break;
+      case 30:
+        D[sp - 2] = (D[sp - 2] >>> (D[sp - 1] & 31)) | 0;
+        sp--;
+        break;
+      case 32:
+        D[sp - 2] = D[sp - 2] === D[sp - 1] ? 1 : 0;
+        sp--;
+        break;
+      case 33:
+        D[sp - 2] = D[sp - 2] < D[sp - 1] ? 1 : 0;
+        sp--;
+        break;
+      case 34:
+        D[sp - 2] = (D[sp - 2] >>> 0) < (D[sp - 1] >>> 0) ? 1 : 0;
+        sp--;
+        break;
       case 48: case 49: case 50: {
         const rel = ((p[nx - 2] | (p[nx - 1] << 8)) << 16) >> 16;
         let t = true;
